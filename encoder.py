@@ -1,5 +1,11 @@
 """
 Encoder:
+    text
+    |
+    V
+    embedding
+    |
+    V
     Prenet
     |
     V
@@ -26,6 +32,18 @@ def embed(inputs, vocab_size, num_units=256, zero_pad=True):
 
     return tf.nn.embedding_lookup(embedding_table, vocab_size)
 
+
+def prenet(inputs, num_units):
+    with tf.variable_scope("prenet"):
+        layer1 = tf.layers.dense(inputs, num_units, activation=tf.nn.relu, name="layer1")
+        layer1 = tf.nn.dropout(layer1, keep_prob=0.5, name="layer1_with_dropout")
+        layer2 = tf.layers.dense(layer1, num_units, activation=tf.nn.relu, name="layer2")
+        layer2 = tf.nn.dropout(layer2, keep_prob=0.5, name="layer2_with_dropout")
+    return layer2
+
+
+def cbhg(inputs):
+    pass
 
 
 
