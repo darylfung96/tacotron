@@ -37,8 +37,8 @@ def embed(inputs, vocab_size, num_units=256, zero_pad=True):
 
 def prenet(inputs):
     with tf.variable_scope("prenet"):
-        layer1 = declare_layer(inputs, 256, "layer1")
-        layer2 = declare_layer(layer1, 128, "layer2")
+        layer1 = tf.layers.dense(inputs, 256, activation=tf.nn.relu)
+        layer2 = tf.layers.dense(layer1, 128, activation=tf.nn.relu)
     return layer2
 
 
@@ -53,7 +53,6 @@ def encoder(inputs):
 
 
 #  toy data
-#TODO make it available for 3D
 data = np.array(np.random.rand(100, 26), dtype=np.float32)
 data = tf.convert_to_tensor(data, dtype=tf.float32)
 prenet(data)
