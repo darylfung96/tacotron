@@ -46,8 +46,10 @@ def prenet(inputs):
     Convolution bank + Highway network + GRU (CBHG)
 """
 def conv1bank(inputs, k):
-    # conv1(inputs, k, )
-    pass
+    outputs = conv1d(inputs, filters=128, kernel_size=1, activation=tf.nn.relu)
+    for i in range(2, k+1):
+        outputs = conv1d(outputs, 128, k, activation=tf.nn.relu)
+    return tf.layers.batch_normalization(outputs, training=True, epsilon=1e-7)
 
 def cbhg(inputs):
 
@@ -62,7 +64,7 @@ def encoder(inputs):
 
 
 
-def conv1(inputs, filters, kernel_size, activation):
+def conv1d(inputs, filters, kernel_size, activation):
     outputs = tf.layers.conv1d(inputs, filters=filters, kernel_size=kernel_size, activation=activation)
     return tf.layers.batch_normalization(outputs, training=True)
 
