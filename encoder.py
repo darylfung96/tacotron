@@ -57,7 +57,20 @@ def conv1dbank(inputs, k):
 
 #CBHG
 def cbhg(inputs, k):
-    outputs = conv1dbank(inputs, k)
+    outputs = embed(inputs, 0)          # N, text_size, em_size
+    prenet_outputs = prenet(outputs)
+    outputs = conv1dbank(prenet_outputs, k)    # N, text_size, k * em_size/2
+    #pooling
+    outputs = tf.layers.max_pooling1d(outputs, 2, 1, padding='same')    # same size (N, text_size, k * em_size/2)
+    #conv1d projection
+    outputs = tf.layers.conv1d(outputs, 128, 3)                         # N, text_size, 128
+    outputs = tf.nn.relu(tf.layers.batch_normalization(outputs, training=True))
+    outputs = tf.layers.conv1d(outputs, 128, 3)                         # N, text_size, 128
+    outputs = tf.layers.batch_normalization(outputs, training=True)
+    #add residual connection
+    outputs += prenet_outputs
+
+    #TODO: highway nets and GRU
 
     pass
 
