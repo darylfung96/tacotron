@@ -43,15 +43,21 @@ def prenet(inputs):
 
 
 """
-    Convolution bank + Highway network + GRU (CBHG)
+    Convolution bank + pooling + Highway network + GRU (CBHG)
 """
-def conv1bank(inputs, k):
+
+# conv1d bank
+def conv1dbank(inputs, k):
     outputs = conv1d(inputs, filters=128, kernel_size=1, activation=tf.nn.relu)
     for i in range(2, k+1):
-        outputs = conv1d(outputs, 128, k, activation=tf.nn.relu)
+        single_output = conv1d(outputs, 128, k, activation=tf.nn.relu)
+        outputs = tf.concat((outputs, single_output), -1)
     return tf.layers.batch_normalization(outputs, training=True, epsilon=1e-7)
 
-def cbhg(inputs):
+
+#CBHG
+def cbhg(inputs, k):
+    outputs = conv1dbank(inputs, k)
 
     pass
 
