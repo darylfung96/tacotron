@@ -32,17 +32,25 @@ def embed(inputs, vocab_size, num_units=256, zero_pad=True):
         if zero_pad:
             embedding_table = tf.concat((tf.zeros(shape=[1, num_units]), embedding_table[1:, :]), 0)
 
-    return tf.nn.embedding_lookup(embedding_table, vocab_size)
+    return tf.nn.embedding_lookup(embedding_table, inputs)
 
 
 def prenet(inputs):
     with tf.variable_scope("prenet"):
-        layer1 = tf.layers.dense(inputs, 256, activation=tf.nn.relu)
-        layer2 = tf.layers.dense(layer1, 128, activation=tf.nn.relu)
+        layer1 = tf.nn.dropout(tf.layers.dense(inputs, 256, activation=tf.nn.relu), keep_prob=0.5)
+        layer2 = tf.nn.dropout(tf.layers.dense(layer1, 128, activation=tf.nn.relu), keep_prob=0.5)
     return layer2
 
 
+"""
+    Convolution bank + Highway network + GRU (CBHG)
+"""
+def conv1bank(inputs, k):
+    # conv1(inputs, k, )
+    pass
+
 def cbhg(inputs):
+
     pass
 
 
@@ -51,6 +59,12 @@ def encoder(inputs):
     pass
 
 
+
+
+
+def conv1(inputs, filters, kernel_size, activation):
+    outputs = tf.layers.conv1d(inputs, filters=filters, kernel_size=kernel_size, activation=activation)
+    return tf.layers.batch_normalization(outputs, training=True)
 
 #  toy data
 data = np.array(np.random.rand(100, 26), dtype=np.float32)
