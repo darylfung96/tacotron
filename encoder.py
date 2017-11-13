@@ -21,6 +21,7 @@ Encoder:
 """
 import tensorflow as tf
 import numpy as np
+import torch
 from initializer_util import declare_layer
 
 
@@ -55,6 +56,35 @@ def conv1dbank(inputs, k):
     return tf.layers.batch_normalization(outputs, training=True, epsilon=1e-7)
 
 
+""" 
+highway network 
+
+T = transform gate
+C = carry the original value
+
+C = 1. - T
+
+Notice that when T = 0, output is input.
+So when we completely transform it, we don't let any input pass through it.
+
+output = H * T + input * C
+
+"""
+def highwaynet(inputs, num_units):
+
+    H = tf.layers.dense(inputs, units=num_units, activation=tf.nn.relu, name="H_encoder_highway")
+    T = tf.layers.dense(inputs, units=num_units, activation=tf.nn.sigmoid, name="T_encoder_highway")
+
+    C = 1. - T
+
+    outputs = H * T + inputs * C
+    return outputs
+
+
+
+""" end of CBHG helper methods """
+
+
 #CBHG
 def cbhg(inputs, k):
     outputs = embed(inputs, 0)          # N, text_size, em_size
@@ -70,8 +100,8 @@ def cbhg(inputs, k):
     #add residual connection
     outputs += prenet_outputs
 
-    #TODO: highway nets and GRU
-
+    #TODO:  GRU
+    outputs = highwaynet(outputs, 128)
     pass
 
 
