@@ -21,6 +21,7 @@ Encoder:
 """
 import tensorflow as tf
 import numpy as np
+from tensorflow.contrib.rnn import GRUCell
 import torch
 from initializer_util import declare_layer
 
@@ -100,9 +101,15 @@ def cbhg(inputs, k):
     #add residual connection
     outputs += prenet_outputs
 
-    #TODO:  GRU
-    outputs = highwaynet(outputs, 128)
-    pass
+    #highway networks
+    for i in range(4):  # 4 highway networks just like in the paper
+        outputs = highwaynet(outputs, 128)
+
+    #bi-directional GRU
+    outputs = tf.nn.bidirectional_dynamic_rnn(GRUCell(128), GRUCell(128), outputs, dtype=tf.float32)
+    outputs = tf.concat(outputs, 2) # combine the forward and backward GRU
+
+    return outputs
 
 
 
