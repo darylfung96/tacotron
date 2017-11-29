@@ -15,8 +15,6 @@ Encoder:
 import tensorflow as tf
 import numpy as np
 from tensorflow.contrib.rnn import GRUCell
-import torch
-from initializer_util import declare_layer
 
 
 def embed(inputs, vocab_size, num_units=256, zero_pad=True):
