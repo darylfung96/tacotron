@@ -37,6 +37,7 @@ def prenet(inputs):
     return layer2
 
 
+# convolution 1 dimension that includes the batch normalization
 def conv1d(inputs, filters, kernel_size, activation):
     outputs = tf.layers.conv1d(inputs, filters=filters, kernel_size=kernel_size, activation=activation)
     return tf.layers.batch_normalization(outputs, training=True)
