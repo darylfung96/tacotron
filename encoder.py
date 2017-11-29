@@ -10,13 +10,6 @@ Encoder:
     |
     V
     CBHG
-    |
-    V
-    residual connection
-    |
-    V
-    GRU bidirectional
-    
 
 """
 import tensorflow as tf
@@ -43,6 +36,10 @@ def prenet(inputs):
         layer2 = tf.nn.dropout(tf.layers.dense(layer1, 128, activation=tf.nn.relu), keep_prob=0.5)
     return layer2
 
+
+def conv1d(inputs, filters, kernel_size, activation):
+    outputs = tf.layers.conv1d(inputs, filters=filters, kernel_size=kernel_size, activation=activation)
+    return tf.layers.batch_normalization(outputs, training=True)
 
 """
     Convolution bank + pooling + Highway network + GRU (CBHG)
@@ -92,22 +89,23 @@ CBHG:
         conv1d bank with 128 neurons and K(1 to K) times features mapping
         pooling layer with stride 1 and width 2
         conv1d projections with 128 neurons (2 of them)
+        residual connection from conv1bank
         highway network (4 layers)
         GRU bi-directinal
 """
 def cbhg(inputs, k):
-    # outputs = embed(inputs, 0)          # N, text_size, em_size
+    # outputs = embed(inputs, 0)          # N, text_size, embedding_size(256)
     # prenet_outputs = prenet(outputs)
-    outputs = conv1dbank(inputs, k)    # N, text_size, k * em_size/2
+    outputs = conv1dbank(inputs, k)    # N, text_size, k * embedding_size/2
     #pooling
-    outputs = tf.layers.max_pooling1d(outputs, 2, 1, padding='same')    # same size (N, text_size, k * em_size/2)
+    outputs = tf.layers.max_pooling1d(outputs, 2, 1, padding='same')    # same size (N, text_size, k * embedding_size/2)
     #conv1d projection
-    outputs = tf.layers.conv1d(outputs, 128, 3)                         # N, text_size, 128
+    outputs = tf.layers.conv1d(outputs, 128, 3)                         # N, text_size, 128(embedding_size/2)
     outputs = tf.nn.relu(tf.layers.batch_normalization(outputs, training=True))
-    outputs = tf.layers.conv1d(outputs, 128, 3)                         # N, text_size, 128
+    outputs = tf.layers.conv1d(outputs, 128, 3)                         # N, text_size, 128(embedding_size/2)
     outputs = tf.layers.batch_normalization(outputs, training=True)
     #add residual connection
-    # outputs += prenet_outputs
+    outputs += inputs
 
     #highway networks
     for i in range(4):  # 4 highway networks just like in the paper
@@ -115,22 +113,36 @@ def cbhg(inputs, k):
 
     #bi-directional GRU
     outputs = tf.nn.bidirectional_dynamic_rnn(GRUCell(128), GRUCell(128), outputs, dtype=tf.float32)
-    outputs = tf.concat(outputs, 2) # combine the forward and backward GRU
+    outputs = tf.concat(outputs, 2)  # combine the forward and backward GRU #N, text_size, embedding_size
 
     return outputs
 
 
 
+"""
+        encoder contains:
+        
+        prenet  -> 256 neurons (dropout 0.5) 
+                -> 128 neurons (dropout 0.5)
+                
+        cbhg
+        
+        return the output
+"""
 def encoder(inputs):
-    pass
+    #prenet
+    outputs = prenet(inputs)
+
+    #cbhg
+    outputs = cbhg(outputs, 16) #16 refers to the K filter for the conv bank
+
+    return outputs
 
 
 
 
 
-def conv1d(inputs, filters, kernel_size, activation):
-    outputs = tf.layers.conv1d(inputs, filters=filters, kernel_size=kernel_size, activation=activation)
-    return tf.layers.batch_normalization(outputs, training=True)
+
 
 #  toy data
 data = np.array(np.random.rand(100, 26), dtype=np.float32)
