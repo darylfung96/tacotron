@@ -47,7 +47,6 @@ def first_decoding(inputs, encoder_inputs):
 
     outputs = attention_decoder(inputs, encoder_inputs, 256)
 
-    # TODO: pass in two GRUs (bidirectional)
     gru1 = tf.nn.bidirectional_dynamic_rnn(GRUCell(128), GRUCell(128), outputs, dtype=tf.float32)
     gru2 = tf.nn.bidirectional_dynamic_rnn(GRUCell(128), GRUCell(128), outputs, dtype=tf.float32)
 
