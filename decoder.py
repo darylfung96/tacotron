@@ -18,6 +18,9 @@
 
 
 """
+from tensorflow.contrib.rnn import GRUCell
+
+from network_module import prenet
 
 def prenet(inputs):
     with tf.variable_scope("prenet"):
@@ -39,6 +42,18 @@ def attention_decoder(inputs, memory, num_units):
     return outputs
 
 
-def decoder(inputs):
+def first_decoding(inputs, encoder_inputs):
     outputs = prenet(inputs)
 
+    outputs = attention_decoder(inputs, encoder_inputs, 256)
+
+    # TODO: pass in two GRUs (bidirectional)
+    gru1 = tf.nn.bidirectional_dynamic_rnn(GRUCell(128), GRUCell(128), outputs, dtype=tf.float32)
+    gru2 = tf.nn.bidirectional_dynamic_rnn(GRUCell(128), GRUCell(128), outputs, dtype=tf.float32)
+
+    outputs += gru1
+    outputs += gru2
+
+    out_dim = inputs.get_shape().as_list()[-1]
+
+    return tf.layers.dense(outputs, out_dim)
