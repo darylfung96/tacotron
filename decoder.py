@@ -55,13 +55,14 @@ def first_decoding(inputs, encoder_inputs):
     outputs += gru2
 
     out_dim = inputs.get_shape().as_list()[-1]
-    return tf.layers.dense(outputs, out_dim)
+    outputs = tf.layers.dense(outputs, out_dim * 3)  # 3 is the reduction factor
+    return outputs
 
 def second_decoding(inputs):
     outputs = prenet(inputs)
 
     outputs = cbhg(outputs, 16)
 
-    out_dim = (1+2048//2)*3         # 2048 = sample points, 3 = r (reduction)
+    out_dim = 1+2048//2        # 2048 = sample points, 3 = r (reduction)
 
     return tf.layers.dense(outputs, out_dim)
