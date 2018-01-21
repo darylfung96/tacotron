@@ -107,16 +107,24 @@ def full_decoding(encoder_outputs, is_training):
     # attention
     # concat attention
     # gru gru
-    #output
-
+    # output
 
     # inside cell_outputs, there's the states that contain the attentions
+    # We make DecoderPrenetWrapper and ConcatAttentionWrapper an RNNCell so that
+    # later on there is a helper function that can do everything for us right away
     cell_outputs = tf.contrib.seq2seq.AttentionWrapper(
         DecoderPrenetWrapper(GRUCell(256), is_training=is_training),
         tf.contrib.seq2seq.BahdanauAttention(256, encoder_outputs, normalize=True, probability_fn=tf.nn.softmax),
         alignment_history=True,
         output_attention=False
     )
+    """
+        I learn that in AttentionWrapper, if we set alignment_history to true, we will get all the previous alignments
+        If we set the output_attention to false, we will get an output for the cell_output instead of the attention, but 
+        the attention will be stored in the state.
+        
+        We do this so we can combine the output the attention.
+    """
 
     output_attention_cell = ConcatAttentionOutputWrapper(cell_outputs)
 
