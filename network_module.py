@@ -12,10 +12,11 @@ def embed(inputs, vocab_size, num_units=256, zero_pad=True):
     return tf.nn.embedding_lookup(embedding_table, inputs)
 
 
-def prenet(inputs):
+def prenet(inputs, is_training):
+    dropout_rate = 0.5 if is_training else 0
     with tf.variable_scope("prenet"):
-        layer1 = tf.nn.dropout(tf.layers.dense(inputs, 256, activation=tf.nn.relu), keep_prob=0.5)
-        layer2 = tf.nn.dropout(tf.layers.dense(layer1, 128, activation=tf.nn.relu), keep_prob=0.5)
+        layer1 = tf.nn.dropout(tf.layers.dense(inputs, 256, activation=tf.nn.relu), keep_prob=dropout_rate)
+        layer2 = tf.nn.dropout(tf.layers.dense(layer1, 128, activation=tf.nn.relu), keep_prob=dropout_rate)
     return layer2
 
 
