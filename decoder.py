@@ -19,9 +19,10 @@
 
 """
 import tensorflow as tf
-from tensorflow.contrib.rnn import GRUCell, RNNCell
+from tensorflow.contrib.rnn import GRUCell, RNNCell, OutputProjectionWrapper, MultiRNNCell, ResidualWrapper
 
 from network_module import prenet, cbhg
+from Hyperparameters import hp
 
 
 def attention_decoder(inputs, memory, num_units):
@@ -83,6 +84,7 @@ class DecoderPrenetWrapper(RNNCell):
     def zero_state(self, batch_size, dtype):
         return self._cell.zero_state(batch_size, dtype)
 
+
 class ConcatAttentionOutputWrapper(RNNCell):
     def __init__(self, cell):
         super(ConcatAttentionOutputWrapper, self).__init__()
@@ -102,7 +104,7 @@ class ConcatAttentionOutputWrapper(RNNCell):
 
 
 
-def full_decoding(encoder_outputs, is_training):
+def full_decoding(encoder_outputs, is_training, batch_size=32):
     # prenet
     # attention
     # concat attention
@@ -128,9 +130,18 @@ def full_decoding(encoder_outputs, is_training):
 
     output_attention_cell = ConcatAttentionOutputWrapper(cell_outputs)
 
-    #TODO: outputwrapper + gru
+    decoding_cells = MultiRNNCell([
+        OutputProjectionWrapper(output_attention_cell, 256),
+        ResidualWrapper(GRUCell(256)),
+        ResidualWrapper(GRUCell(256))
+    ])
+
+    decoder_outputs = OutputProjectionWrapper(decoding_cells, hp.num_mels*hp.r_frames)
+    decoder_initial_states = decoder_outputs.zero_state(batch_size=batch_size, dtype=tf.float32)
+
 
     #TODO: helper function to do the inputs with targets
+
 
 
     pass
