@@ -20,6 +20,7 @@
 """
 import tensorflow as tf
 from tensorflow.contrib.rnn import GRUCell, RNNCell, OutputProjectionWrapper, MultiRNNCell, ResidualWrapper
+from tensorflow.contrib.seq2seq import Helper
 
 from network_module import prenet, cbhg
 from Hyperparameters import hp
