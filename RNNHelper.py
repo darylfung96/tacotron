@@ -7,8 +7,11 @@ class TrainingHelper(Helper):
         super(TrainingHelper, self).__init__()
         self._batch_size = tf.shape(inputs)[0]
         self._output_dim = output_dim
+        self._targets = targets
+
         num_step = tf.shape(targets)[1]
 
+        # tile and use the total num_step
         # use the whole frame and not mask it, because the 0 frames will stil contribute to silencing the audio
         self._length = tf.tile([num_step], [self._batch_size])
 
@@ -31,4 +34,8 @@ class TrainingHelper(Helper):
         return tf.tile([0], [self._batch_size])
 
     def next_inputs(self, time, outputs, state, sample_ids, name=None):
-        pass
+        """ returns finished, next input, and state"""
+        with tf.name_scope("training_helper"):
+            finished = time+1 >= self._length
+            next_input = self._targets[:, time, :]
+            return finished, next_input, state

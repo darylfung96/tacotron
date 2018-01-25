@@ -20,10 +20,12 @@
 """
 import tensorflow as tf
 from tensorflow.contrib.rnn import GRUCell, RNNCell, OutputProjectionWrapper, MultiRNNCell, ResidualWrapper
-from tensorflow.contrib.seq2seq import Helper
+from tensorflow.contrib.seq2seq import Helper, dynamic_decode, BasicDecoder
 
 from network_module import prenet, cbhg
 from Hyperparameters import hp
+
+from RNNHelper import TrainingHelper
 
 
 def attention_decoder(inputs, memory, num_units):
@@ -105,7 +107,7 @@ class ConcatAttentionOutputWrapper(RNNCell):
 
 
 
-def full_decoding(encoder_outputs, is_training, batch_size=32):
+def full_decoding(encoder_outputs, is_training, inputs, mel_targets, batch_size=32):
     # prenet
     # attention
     # concat attention
@@ -141,8 +143,12 @@ def full_decoding(encoder_outputs, is_training, batch_size=32):
     decoder_initial_states = decoder_outputs.zero_state(batch_size=batch_size, dtype=tf.float32)
 
 
-    #TODO: helper function to do the inputs with targets
+    #TODO: testing helper function
+    if is_training:
+        helper = TrainingHelper(inputs, mel_targets, hp.num_mels)
 
+     #TODO specify the return values for dynamic_decode
+     dynamic_decode(BasicDecoder(decoder_outputs, helper, decoder_initial_states))
 
 
     pass
