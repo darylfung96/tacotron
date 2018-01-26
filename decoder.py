@@ -145,7 +145,7 @@ def full_decoding(encoder_outputs, is_training, inputs, mel_targets, batch_size=
 
     #TODO: testing helper function
     if is_training:
-        helper = TrainingHelper(inputs, mel_targets, hp.num_mels)
+        helper = TrainingHelper(inputs, mel_targets, hp.num_mels, hp.r_frames)
 
     #TODO specify the return values for dynamic_decode
     dynamic_decode(BasicDecoder(decoder_outputs, helper, decoder_initial_states))
