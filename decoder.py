@@ -143,15 +143,15 @@ def full_decoding(encoder_outputs, is_training, inputs, mel_targets, batch_size=
     decoder_initial_states = decoder_outputs.zero_state(batch_size=batch_size, dtype=tf.float32)
 
 
-    #TODO: testing helper function
     if is_training:
         helper = TrainingHelper(inputs, mel_targets, hp.num_mels, hp.r_frames)
     else:
         helper = TestingHelper(batch_size=batch_size, output_dim=hp.num_mels, r=hp.r_frames)
 
-    #TODO specify the return values for dynamic_decode
     (final_decoder_outputs, _), decoder_states, _ = dynamic_decode(BasicDecoder(decoder_outputs, helper, decoder_initial_states))
 
+    mel_outputs = tf.reshape(final_decoder_outputs, shape=[batch_size, -1, hp.num_mels])
+    post_outputs = cbhg(mel_outputs, 16)
+    linear_outputs = tf.layers.dense(post_outputs, hp.num_freq)
 
-
-    pass
+    return mel_outputs, linear_outputs
