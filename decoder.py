@@ -25,7 +25,7 @@ from tensorflow.contrib.seq2seq import Helper, dynamic_decode, BasicDecoder
 from network_module import prenet, cbhg
 from Hyperparameters import hp
 
-from RNNHelper import TrainingHelper
+from RNNHelper import TrainingHelper, TestingHelper
 
 
 def attention_decoder(inputs, memory, num_units):
@@ -146,9 +146,12 @@ def full_decoding(encoder_outputs, is_training, inputs, mel_targets, batch_size=
     #TODO: testing helper function
     if is_training:
         helper = TrainingHelper(inputs, mel_targets, hp.num_mels, hp.r_frames)
+    else:
+        helper = TestingHelper(batch_size=batch_size, output_dim=hp.num_mels, r=hp.r_frames)
 
     #TODO specify the return values for dynamic_decode
-    dynamic_decode(BasicDecoder(decoder_outputs, helper, decoder_initial_states))
+    (final_decoder_outputs, _), decoder_states, _ = dynamic_decode(BasicDecoder(decoder_outputs, helper, decoder_initial_states))
+
 
 
     pass
