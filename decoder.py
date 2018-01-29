@@ -107,7 +107,7 @@ class ConcatAttentionOutputWrapper(RNNCell):
 
 
 
-def full_decoding(encoder_outputs, is_training, inputs, mel_targets, batch_size=32):
+def full_decoding(encoder_outputs, is_training, mel_targets, batch_size=32):
     # prenet
     # attention
     # concat attention
@@ -144,7 +144,7 @@ def full_decoding(encoder_outputs, is_training, inputs, mel_targets, batch_size=
 
 
     if is_training:
-        helper = TrainingHelper(inputs, mel_targets, hp.num_mels, hp.r_frames)
+        helper = TrainingHelper(batch_size, mel_targets, hp.num_mels, hp.r_frames)
     else:
         helper = TestingHelper(batch_size=batch_size, output_dim=hp.num_mels, r=hp.r_frames)
 
