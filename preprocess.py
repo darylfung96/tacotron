@@ -21,8 +21,8 @@ To preprocess data:
 def process_wav(wav_file):
     wav = librosa.core.load(wav_file, sr=hp.sample_rate)[0]  # load as floating point time series
 
-    spec_wav = _get_spectrogram(wav)
-    mel_wav = _get_mel_spectrogram(wav)
+    spec_wav = _get_spectrogram(wav).astype(np.float32)
+    mel_wav = _get_mel_spectrogram(wav).astype(np.float32)
 
     return spec_wav, mel_wav
 

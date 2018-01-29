@@ -9,4 +9,4 @@ class hp:
 
     amp_reference = 20
 
-    min_level_db = 100
+    min_level_db = -100
