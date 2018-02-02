@@ -23,7 +23,7 @@ class LJDataset(Dataset):
 
         csv_file_path = os.path.join(self._folder_dir, "metadata.csv")
 
-        file_results = []
+        job_results = []
 
         if not os.path.isdir('training'):
             os.mkdir('training')
@@ -34,21 +34,24 @@ class LJDataset(Dataset):
 
             processor = ProcessPoolExecutor(max_workers=multiprocessing.cpu_count())
             file_results = []
+            index = 0
 
-            for data in tqdm(csv_data):
-                linear_output, mel_output, text = self._extract_data(data)  # it was always outputting 1 in ever rows and columns, figured out the problem was with min_level_db which should be -100 but was 100.
+            for data in csv_data:
+                #linear_output, mel_output, text = self._extract_data(data)  # it was always outputting 1 in ever rows and columns, figured out the problem was with min_level_db which should be -100 but was 100.
 
-                result = processor.submit(self._extract_data, data)
-                file_results.append(result)
+                job_done = processor.submit(self._extract_data, data, index)
+                job_results.append(job_done)
+                index += 1
 
-
-
-        with open('training/train.txt', 'r') as f:
-            for result in tqdm(file_results):
-                f.write(result)
+        training_data = [job_done.result() for job_done in tqdm(job_results)]
 
 
-    def _extract_data(self, data):
+        with open('training/train.txt', 'w') as f:
+            for data in tqdm(training_data):
+                f.write(data)
+
+
+    def _extract_data(self, data, index):
         data = data.split('|')  # data[0] = filename, data[1] = text
 
         wav_file = data[0] + '.wav'
@@ -57,8 +60,8 @@ class LJDataset(Dataset):
         wav_path = os.path.join(self._folder_dir, 'wavs', wav_file)
         linear_output, mel_output = process_wav(wav_path)
 
-        linear_file = 'training/' + wav_file + '-linear.pkl'
-        mel_file = 'training/' + wav_file + '-mel.pkl'
+        linear_file = 'training/{}-linear.pkl'.format(index)
+        mel_file = 'training/{}-mel.pkl'.format(index)
 
         with open(linear_file, 'wb') as f:
             pickle.dump(linear_output, f)
