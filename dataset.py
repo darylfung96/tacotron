@@ -4,7 +4,7 @@ from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
 
-from preprocess import process_wav
+from preprocess.preprocess_wav import process_wav
 
 class Dataset:
     def __init__(self, folder_dir):
