@@ -17,8 +17,8 @@ class Tacotron:
         self.embedding_variables = tf.get_variable('embedding', shape=[len(symbols), 256])
         self.embedding_inputs = tf.nn.embedding_lookup(self.embedding_variables, inputs)
 
-        self.encoder_outputs = encoder(self.embedding_inputs)
-        self.mel_outputs, self.linear_outputs = full_decoding(self.encoder_outputs, is_training, mel_targets, batch_size=batch_size)
+        self.encoder_outputs = encoder(self.embedding_inputs, is_training=is_training)
+        self.mel_outputs, self.linear_outputs = full_decoding(inputs, self.encoder_outputs, is_training, mel_targets, batch_size=batch_size)
 
 
     def _loss(self):

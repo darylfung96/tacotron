@@ -30,12 +30,12 @@ from network_module import prenet, cbhg
         
         return the output
 """
-def encoder(inputs):
+def encoder(inputs, is_training=True):
     #prenet
-    outputs = prenet(inputs)
+    outputs = prenet(inputs, is_training=is_training, scope='encoder_prenet')
 
     #cbhg
-    outputs = cbhg(outputs, 16) #16 refers to the K filter for the conv bank
+    outputs = cbhg(outputs, 16, projections=[128, 128], scope='encoder_cbhg') #16 refers to the K filter for the conv bank
 
     return outputs
 
@@ -48,4 +48,4 @@ def encoder(inputs):
 #  toy data
 data = np.array(np.random.rand(100, 26), dtype=np.float32)
 data = tf.convert_to_tensor(data, dtype=tf.float32)
-prenet(data)
+prenet(data, True)

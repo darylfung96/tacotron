@@ -12,9 +12,9 @@ def embed(inputs, vocab_size, num_units=256, zero_pad=True):
     return tf.nn.embedding_lookup(embedding_table, inputs)
 
 
-def prenet(inputs, is_training):
+def prenet(inputs, is_training, scope=None):
     dropout_rate = 0.5 if is_training else 0
-    with tf.variable_scope("prenet"):
+    with tf.variable_scope(scope or "prenet"):
         layer1 = tf.nn.dropout(tf.layers.dense(inputs, 256, activation=tf.nn.relu), keep_prob=dropout_rate)
         layer2 = tf.nn.dropout(tf.layers.dense(layer1, 128, activation=tf.nn.relu), keep_prob=dropout_rate)
     return layer2
@@ -52,10 +52,10 @@ So when we completely transform it, we don't let any input pass through it.
 output = H * T + input * C
 
 """
-def highwaynet(inputs, num_units):
+def highwaynet(inputs, num_units, scope=None):
 
-    H = tf.layers.dense(inputs, units=num_units, activation=tf.nn.relu, name="H_encoder_highway")
-    T = tf.layers.dense(inputs, units=num_units, activation=tf.nn.sigmoid, name="T_encoder_highway")
+    H = tf.layers.dense(inputs, units=num_units, activation=tf.nn.relu, name="H_encoder_highway_"+scope)
+    T = tf.layers.dense(inputs, units=num_units, activation=tf.nn.sigmoid, name="T_encoder_highway_"+scope)
 
     C = 1. - T
 
@@ -77,26 +77,32 @@ CBHG:
         highway network (4 layers)
         GRU bi-directinal
 """
-def cbhg(inputs, k):
-    # outputs = embed(inputs, 0)          # N, text_size, embedding_size(256)
-    # prenet_outputs = prenet(outputs)
-    outputs = conv1dbank(inputs, k)    # N, text_size, k * embedding_size/2
-    #pooling
-    outputs = tf.layers.max_pooling1d(outputs, 2, 1, padding='same')    # same size (N, text_size, k * embedding_size/2)
-    #conv1d projection
-    outputs = tf.layers.conv1d(outputs, 128, 3)                         # N, text_size, 128(embedding_size/2)
-    outputs = tf.nn.relu(tf.layers.batch_normalization(outputs, training=True))
-    outputs = tf.layers.conv1d(outputs, 128, 3)                         # N, text_size, 128(embedding_size/2)
-    outputs = tf.layers.batch_normalization(outputs, training=True)
-    #add residual connection
-    outputs += inputs
+def cbhg(inputs, k, projections=[128, 128], scope=None):
 
-    #highway networks
-    for i in range(4):  # 4 highway networks just like in the paper
-        outputs = highwaynet(outputs, 128)
+    with tf.variable_scope(scope):
+        # outputs = embed(inputs, 0)          # N, text_size, embedding_size(256)
+        # prenet_outputs = prenet(outputs)
+        outputs = conv1dbank(inputs, k)    # N, text_size, k * embedding_size/2
+        #pooling
+        outputs = tf.layers.max_pooling1d(outputs, 2, 1, padding='same')    # same size (N, text_size, k * embedding_size/2)
+        #conv1d projection
+        outputs = tf.layers.conv1d(outputs, projections[0], 3)                         # N, text_size, 128(embedding_size/2)
+        outputs = tf.nn.relu(tf.layers.batch_normalization(outputs, training=True))
+        outputs = tf.layers.conv1d(outputs, projections[1], 3)                         # N, text_size, 128(embedding_size/2)
+        outputs = tf.layers.batch_normalization(outputs, training=True)
+        #add residual connection
+        outputs += inputs
 
-    #bi-directional GRU
-    outputs = tf.nn.bidirectional_dynamic_rnn(GRUCell(128), GRUCell(128), outputs, dtype=tf.float32)
-    outputs = tf.concat(outputs, 2)  # combine the forward and backward GRU #N, text_size, embedding_size
+        # fix wrong dimension
+        if outputs[2] != 128:
+            outputs = tf.layers.dense(outputs, 128)
 
-    return outputs
+        #highway networks
+        for i in range(4):  # 4 highway networks just like in the paper
+            outputs = highwaynet(outputs, 128, '{}_{}'.format(scope, i))
+
+        #bi-directional GRU
+        outputs, states = tf.nn.bidirectional_dynamic_rnn(GRUCell(128), GRUCell(128), outputs, dtype=tf.float32)
+        outputs = tf.concat(outputs, 2)  # combine the forward and backward GRU #N, text_size, embedding_size
+
+        return outputs

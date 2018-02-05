@@ -36,9 +36,9 @@ class TestingHelper(Helper):
 
 
 class TrainingHelper(Helper):
-    def __init__(self, batch_size, targets, output_dim, r):
+    def __init__(self, inputs, targets, output_dim, r):
         super(TrainingHelper, self).__init__()
-        self._batch_size = batch_size
+        self._batch_size = tf.shape(inputs)[0]
         self._output_dim = output_dim
         self._targets = targets[:, r-1::r, :]
 
@@ -63,7 +63,7 @@ class TrainingHelper(Helper):
     def initialize(self, name=None):
         """return initial finished, initial inputs
             tacotron initial_inputs are go_frames """
-        return tf.tile([False], [self._batch_size]),   tf.tile([0.0], [self._batch_size, self._output_dim])
+        return tf.tile([False], [self._batch_size]),   tf.tile([[0.0]], [self._batch_size, self._output_dim])
 
     def sample(self, time, outputs, state, name=None):
         """ sample the ids """

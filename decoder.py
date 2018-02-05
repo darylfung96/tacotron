@@ -81,7 +81,7 @@ class DecoderPrenetWrapper(RNNCell):
         return self._cell.output_size
 
     def __call__(self, inputs, state, scope=None):
-        prenet_outputs = prenet(inputs, self._is_training)
+        prenet_outputs = prenet(inputs, self._is_training, scope='decoder_prenet')
         return self._cell(prenet_outputs, state)
 
     def zero_state(self, batch_size, dtype):
@@ -103,11 +103,14 @@ class ConcatAttentionOutputWrapper(RNNCell):
         output, state = self._cell(inputs, state)
         return tf.concat([output, state.attention], axis=-1), state
 
+    def zero_state(self, batch_size, dtype):
+        return self._cell.zero_state(batch_size, dtype)
 
 
 
 
-def full_decoding(encoder_outputs, is_training, mel_targets, batch_size=32):
+
+def full_decoding(inputs, encoder_outputs, is_training, mel_targets, batch_size=32):
     # prenet
     # attention
     # concat attention
@@ -144,14 +147,14 @@ def full_decoding(encoder_outputs, is_training, mel_targets, batch_size=32):
 
 
     if is_training:
-        helper = TrainingHelper(batch_size, mel_targets, hp.num_mels, hp.r_frames)
+        helper = TrainingHelper(inputs, mel_targets, hp.num_mels, hp.r_frames)
     else:
         helper = TestingHelper(batch_size=batch_size, output_dim=hp.num_mels, r=hp.r_frames)
 
     (final_decoder_outputs, _), decoder_states, _ = dynamic_decode(BasicDecoder(decoder_outputs, helper, decoder_initial_states))
 
     mel_outputs = tf.reshape(final_decoder_outputs, shape=[batch_size, -1, hp.num_mels])
-    post_outputs = cbhg(mel_outputs, 16)
+    post_outputs = cbhg(mel_outputs, 16, projections=[256, hp.num_mels], scope='post_cbhg')
     linear_outputs = tf.layers.dense(post_outputs, hp.num_freq)
 
     return mel_outputs, linear_outputs
