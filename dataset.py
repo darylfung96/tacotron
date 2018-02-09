@@ -3,6 +3,7 @@ import os
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
+import numpy as np
 
 from preprocess.preprocess_wav import process_wav
 from Hyperparameters import hp
@@ -59,6 +60,10 @@ class LJDataset(Dataset):
 
         wav_path = os.path.join(self._folder_dir, 'wavs', wav_file)
         linear_output, mel_output = process_wav(wav_path)
+
+        linear_output = np.array(linear_output).transpose()
+        mel_output = np.array(mel_output).transpose()
+
 
         linear_file = 'training/{}-linear.pkl'.format(index)
         mel_file = 'training/{}-mel.pkl'.format(index)
