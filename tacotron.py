@@ -8,22 +8,18 @@ from Hyperparameters import hp
 
 class Tacotron:
     def __init__(self, batch_size, is_training=True):
-        inputs = tf.placeholder(tf.int32, shape=[None, None])
-        mel_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_mels])
-        linear_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_freq])
+        self.inputs = tf.placeholder(tf.int32, shape=[None, None])
+        self.mel_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_mels])
+        self.linear_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_freq])
 
         self._batch_size = batch_size
         self._is_training = is_training
 
-        self.inputs = inputs
-        self.mel_targets = mel_targets
-        self.linear_targets = linear_targets
-
         self.embedding_variables = tf.get_variable('embedding', shape=[len(hp.symbols), 256])
-        self.embedding_inputs = tf.nn.embedding_lookup(self.embedding_variables, inputs)
+        self.embedding_inputs = tf.nn.embedding_lookup(self.embedding_variables, self.inputs)
 
         self.encoder_outputs = encoder(self.embedding_inputs, is_training=is_training)
-        self.mel_outputs, self.linear_outputs = full_decoding(inputs, self.encoder_outputs, is_training, mel_targets, batch_size=batch_size)
+        self.mel_outputs, self.linear_outputs = full_decoding(self.inputs, self.encoder_outputs, is_training, self.mel_targets, batch_size=batch_size)
 
         self._loss()
         self._optimizer()
