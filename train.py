@@ -11,6 +11,7 @@ train data
 
 """
 
+
 def get_data():
     inputs = []
     linear_targets = []
@@ -19,9 +20,13 @@ def get_data():
 
     with open("training/train.txt", 'r') as f:
         for line in f:
-            linear_target, mel_target, input = line.split('|')
+            linear_target_filename, mel_target_filename, input = line.split('|')
             input = input.rstrip()
             input = vectorize_input(input)
+
+            linear_target = load(linear_target_filename)
+            mel_target = load(mel_target_filename)
+
             inputs.append(input); linear_targets.append(linear_target); mel_targets.append(mel_target)
             if len(input) > max_length:
                 max_length = len(input)
@@ -31,6 +36,9 @@ def get_data():
 
     return inputs, linear_targets, mel_targets
 
+def load(filename):
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
 
 def main():
     tacotron = Tacotron(batch_size=32)
