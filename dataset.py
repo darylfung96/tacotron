@@ -5,6 +5,7 @@ from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
 
 from preprocess.preprocess_wav import process_wav
+from Hyperparameters import hp
 
 class Dataset:
     def __init__(self, folder_dir):
@@ -48,8 +49,7 @@ class LJDataset(Dataset):
 
         with open('training/train.txt', 'w') as f:
             for data in tqdm(training_data):
-                f.write(data)
-
+                f.write(data+"\n")
 
     def _extract_data(self, data, index):
         data = data.split('|')  # data[0] = filename, data[1] = text
@@ -73,5 +73,5 @@ class LJDataset(Dataset):
         return result  # linear output, mel output, text
 
 
-dataset = LJDataset("../keith_tacotron/tacotron/LJSpeech-1.0")
+dataset = LJDataset(hp.folder_dir)
 dataset.run()

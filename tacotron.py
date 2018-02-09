@@ -4,11 +4,14 @@ from encoder import encoder
 from decoder import full_decoding
 from Hyperparameters import hp
 
-symbols = '_' + '~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '!\'(),-.:;? '
 
 
 class Tacotron:
-    def __init__(self, inputs, mel_targets, linear_targets, batch_size, is_training=True):
+    def __init__(self, batch_size, is_training=True):
+        inputs = tf.placeholder(tf.int32, shape=[None, None])
+        mel_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_mels])
+        linear_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_freq])
+
         self._batch_size = batch_size
         self._is_training = is_training
 
@@ -16,7 +19,7 @@ class Tacotron:
         self.mel_targets = mel_targets
         self.linear_targets = linear_targets
 
-        self.embedding_variables = tf.get_variable('embedding', shape=[len(symbols), 256])
+        self.embedding_variables = tf.get_variable('embedding', shape=[len(hp.symbols), 256])
         self.embedding_inputs = tf.nn.embedding_lookup(self.embedding_variables, inputs)
 
         self.encoder_outputs = encoder(self.embedding_inputs, is_training=is_training)

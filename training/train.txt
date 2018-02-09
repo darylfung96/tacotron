@@ -1,0 +1,3 @@
+training/0-linear.pkl|training/0-mel.pkl|Printing, in the only sense with which we are at present concerned, differs from most if not from all the arts and crafts represented in the Exhibition
+training/1-linear.pkl|training/1-mel.pkl|in being comparatively modern.
+training/2-linear.pkl|training/2-mel.pkl|For although the Chinese took impressions from wood blocks engraved in relief for centuries before the woodcutters of the Netherlands, by a similar process

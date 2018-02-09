@@ -10,3 +10,7 @@ class hp:
     amp_reference = 20
 
     min_level_db = -100
+
+    folder_dir = "LJSpeech-1.0"
+
+    symbols = '_' + '~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '!\'(),-.:;? '
