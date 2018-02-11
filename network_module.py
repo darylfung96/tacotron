@@ -1,6 +1,8 @@
 import tensorflow as tf
 from tensorflow.contrib.rnn import GRUCell
 
+#TODO: change training value in batch normalization
+
 def embed(inputs, vocab_size, num_units=256, zero_pad=True):
     with tf.variable_scope("embedding"):
         embedding_table = tf.get_variable("embedding_table", shape=[vocab_size, num_units], dtype=tf.float32,
@@ -31,9 +33,9 @@ def conv1d(inputs, filters, kernel_size, activation):
 
 # conv1d bank
 def conv1dbank(inputs, k):
-    outputs = conv1d(inputs, filters=128, kernel_size=1, activation=tf.nn.relu)
+    outputs = conv1d(inputs, filters=1, kernel_size=128, activation=tf.nn.relu)
     for i in range(2, k+1):
-        single_output = conv1d(outputs, 128, k, activation=tf.nn.relu)
+        single_output = conv1d(outputs, filters=i, kernel_size=128, activation=tf.nn.relu)
         outputs = tf.concat((outputs, single_output), -1)
     return tf.layers.batch_normalization(outputs, training=True, epsilon=1e-7)
 

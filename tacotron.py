@@ -10,7 +10,7 @@ class Tacotron:
     def __init__(self, batch_size, is_training=True):
         self.inputs = tf.placeholder(tf.int32, shape=[None, None])
         self.mel_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_mels])
-        self.linear_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_freq])
+        self.linear_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_freq/2 + 1])
 
         self._batch_size = batch_size
         self._is_training = is_training
@@ -24,6 +24,7 @@ class Tacotron:
         self._loss()
         self._optimizer()
         self.sess = tf.Session()
+        self.sess.run(tf.global_variables_initializer())
 
         self.current_step = 0
 

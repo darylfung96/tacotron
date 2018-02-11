@@ -26,6 +26,17 @@ def process_wav(wav_file):
 
     return spec_wav, mel_wav
 
+def _get_spectrogram(inputs):
+    D = _stft(_pre_emphasis(inputs))
+    D = np.abs(D)
+    outputs = _amp_to_db(D) - hp.amp_reference
+    return _normalize(outputs)
+
+def _get_mel_spectrogram(inputs):
+    D = _stft(_pre_emphasis(inputs))
+    D = np.abs(D)
+    outputs = _amp_to_db(_linear_to_mel(D))
+    return _normalize(outputs)
 
 def _pre_emphasis(inputs):
     return signal.lfilter([1, -hp.pre_emphasis], [1], inputs)
@@ -48,16 +59,3 @@ def _normalize(inputs):
 
 def _denormalize(inputs):
     return np.clip(inputs, 0, 1) * -hp.min_level_db + hp.min_level_db
-
-
-def _get_spectrogram(inputs):
-    D = _stft(_pre_emphasis(inputs))
-    D = np.abs(D)
-    outputs = _amp_to_db(D) - hp.amp_reference
-    return _normalize(outputs)
-
-def _get_mel_spectrogram(inputs):
-    D = _stft(_pre_emphasis(inputs))
-    D = np.abs(D)
-    outputs = _amp_to_db(_linear_to_mel(D))
-    return _normalize(outputs)
