@@ -34,7 +34,7 @@ def encoder(inputs, is_training=True):
     #prenet
     outputs = prenet(inputs, is_training=is_training, scope='encoder_prenet')
     #cbhg
-    outputs = cbhg(outputs, 16, projections=[128, 128], scope='encoder_cbhg') #16 refers to the K filter for the conv bank
+    outputs = cbhg(outputs, 16, projections=[128, 128], scope='encoder_cbhg', is_training=is_training) #16 refers to the K filter for the conv bank
 
     return outputs
 

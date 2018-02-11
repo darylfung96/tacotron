@@ -23,16 +23,16 @@ def prenet(inputs, is_training, scope=None):
 
 
 # convolution 1 dimension that includes the batch normalization
-def conv1d(inputs, filters, kernel_size, activation):
-    outputs = tf.layers.conv1d(inputs, filters=filters, kernel_size=kernel_size, activation=activation)
-    return tf.layers.batch_normalization(outputs, training=True)
+def conv1d(inputs, filters, kernel_size, activation, is_training=True):
+    outputs = tf.layers.conv1d(inputs, filters=filters, kernel_size=kernel_size, activation=activation, padding='same')
+    return tf.layers.batch_normalization(outputs, training=is_training)
 
 """
     Convolution bank + pooling + Highway network + GRU (CBHG)
 """
 
 # conv1d bank
-def conv1dbank(inputs, k):
+def conv1dbank(inputs, k, is_training=True):
     """
     We want to get the features from the input here (128 units).
     We passed in a filter of conv1d to extract the feature of this input and
@@ -44,12 +44,11 @@ def conv1dbank(inputs, k):
     :param k:
     :return:
     """
-    print(inputs)
-    outputs = conv1d(inputs, filters=1, kernel_size=128, activation=tf.nn.relu)
+    outputs = conv1d(inputs, filters=1, kernel_size=128, activation=tf.nn.relu, is_training=is_training)
     for i in range(2, k+1):
-        output = conv1d(inputs, filters=i, kernel_size=128, activation=tf.nn.relu)
+        output = conv1d(inputs, filters=i, kernel_size=128, activation=tf.nn.relu, is_training=is_training)
         outputs = tf.concat((outputs, output), -1)
-    return tf.layers.batch_normalization(outputs, training=True, epsilon=1e-7)
+    return tf.layers.batch_normalization(outputs, training=is_training, epsilon=1e-7)
 
 
 """ 
@@ -91,19 +90,17 @@ CBHG:
         highway network (4 layers)
         GRU bi-directinal
 """
-def cbhg(inputs, k, projections=[128, 128], scope=None):
+def cbhg(inputs, k, projections=[128, 128], scope=None, is_training=True):
 
     with tf.variable_scope(scope):
-        # outputs = embed(inputs, 0)          # N, text_size, embedding_size(256)
-        # prenet_outputs = prenet(outputs)
-        outputs = conv1dbank(inputs, k)    # N, text_size, k * embedding_size/2
+        outputs = conv1dbank(inputs, k, is_training=is_training)    # N, text_size, k * embedding_size/2
         #pooling
         outputs = tf.layers.max_pooling1d(outputs, 2, 1, padding='same')    # same size (N, text_size, k * embedding_size/2)
         #conv1d projection
-        outputs = tf.layers.conv1d(outputs, projections[0], 3)                         # N, text_size, 128(embedding_size/2)
-        outputs = tf.nn.relu(tf.layers.batch_normalization(outputs, training=True))
-        outputs = tf.layers.conv1d(outputs, projections[1], 3)                         # N, text_size, 128(embedding_size/2)
-        outputs = tf.layers.batch_normalization(outputs, training=True)
+        outputs = conv1d(outputs, filters=projections[0], kernel_size=3, activation=tf.nn.relu, is_training=is_training)    # N, text_size, 128(embedding_size/2)
+        outputs = tf.nn.relu(tf.layers.batch_normalization(outputs, training=is_training))
+        outputs = conv1d(outputs, filters=projections[1], kernel_size=3, activation=tf.nn.relu, is_training=is_training)    # N, text_size, 128(embedding_size/2)
+        outputs = tf.layers.batch_normalization(outputs, training=is_training)
         #add residual connection
         outputs += inputs       # error here: 157,37,128 + 157,168,128
 
