@@ -33,10 +33,22 @@ def conv1d(inputs, filters, kernel_size, activation):
 
 # conv1d bank
 def conv1dbank(inputs, k):
+    """
+    We want to get the features from the input here (128 units).
+    We passed in a filter of conv1d to extract the feature of this input and
+    concat the filters together.
+    Each filter will expand to the whole 128 units and extract feature. The last output will be 1 if there is only 1 filter,
+    2 if there are 2 filters...
+
+    :param inputs:
+    :param k:
+    :return:
+    """
+    print(inputs)
     outputs = conv1d(inputs, filters=1, kernel_size=128, activation=tf.nn.relu)
     for i in range(2, k+1):
-        single_output = conv1d(outputs, filters=i, kernel_size=128, activation=tf.nn.relu)
-        outputs = tf.concat((outputs, single_output), -1)
+        output = conv1d(inputs, filters=i, kernel_size=128, activation=tf.nn.relu)
+        outputs = tf.concat((outputs, output), -1)
     return tf.layers.batch_normalization(outputs, training=True, epsilon=1e-7)
 
 
@@ -93,7 +105,7 @@ def cbhg(inputs, k, projections=[128, 128], scope=None):
         outputs = tf.layers.conv1d(outputs, projections[1], 3)                         # N, text_size, 128(embedding_size/2)
         outputs = tf.layers.batch_normalization(outputs, training=True)
         #add residual connection
-        outputs += inputs
+        outputs += inputs       # error here: 157,37,128 + 157,168,128
 
         # fix wrong dimension
         if outputs[2] != 128:

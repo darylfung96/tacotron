@@ -13,4 +13,4 @@ class hp:
 
     folder_dir = "../keith_tacotron/tacotron/LJSpeech-1.0"
 
-    symbols = '_' + '~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '!\'(),-.:;? '
+    symbols = '_' + '~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '`1234567890' + '!\'(),-.:;?" '

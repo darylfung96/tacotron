@@ -40,7 +40,7 @@ def load(filename):
         return pickle.load(f)
 
 def main():
-    tacotron = Tacotron(batch_size=3)
+    tacotron = Tacotron(batch_size=157)
     inputs, linear_targets, mel_targets = get_data()
     tacotron.train(inputs, linear_targets, mel_targets)
 

@@ -20,3 +20,9 @@ def pad_input(x, max_length):
 def pad_target(target, max_length):
     target = np.pad(target, [(0, max_length - len(target)), (0, 0)], mode='constant', constant_values=0)
     return target
+
+
+
+# convert number to words
+import num2words
+
