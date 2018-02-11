@@ -23,7 +23,7 @@ class LJDataset(Dataset):
         if not os.path.isdir(self._folder_dir):
             raise FileNotFoundError
 
-        csv_file_path = os.path.join(self._folder_dir, "metadata.csv")
+        csv_file_path = 'LJSpeech-1.0/metadata.csv'#os.path.join(self._folder_dir, "metadata.csv")
 
         job_results = []
 
