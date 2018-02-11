@@ -5,7 +5,7 @@ class hp:
     num_mels = 80
     frame_length = 50  # ms
     frame_shift = 12.5  # ms
-    r_frames = 3
+    r_frames = 4
 
     amp_reference = 20
 

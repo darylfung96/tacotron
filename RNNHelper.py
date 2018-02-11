@@ -46,8 +46,8 @@ class TrainingHelper(Helper):
 
         # tile and use the total num_step
         # use the whole frame and not mask it, because the 0 frames will stil contribute to silencing the audio
-       # self._length = tf.tile([num_step], [self._batch_size])
-        self._length = num_step
+        self._length = tf.tile([num_step], [self._batch_size])
+        # self._length = num_step
 
     @property
     def batch_size(self):
@@ -75,6 +75,4 @@ class TrainingHelper(Helper):
         with tf.name_scope("training_helper"):
             finished = time+1 >= self._length
             next_input = self._targets[:, time, :]
-            print(self._targets)
-            print(next_input)
             return finished, next_input, state

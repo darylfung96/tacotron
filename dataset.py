@@ -17,8 +17,6 @@ class LJDataset(Dataset):
     def __init__(self, folder_dir):
         super(LJDataset, self).__init__(folder_dir=folder_dir)
 
-
-    #TODO: create threads for preprocessing the data to speedup the process
     def run(self):
         if not os.path.isdir(self._folder_dir):
             raise FileNotFoundError
