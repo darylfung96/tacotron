@@ -22,7 +22,7 @@ def pad_target(target, max_length):
     # the target output later on.
     # eg. 799/3 = 266
     # 266 * 3 = 798     -> does not match 799. So we add max_length + 1 to simplify this.
-    target = np.pad(target, [(0, max_length - len(target)), (0, 0)], mode='constant', constant_values=0)
+    target = np.pad(target, [(0, max_length+1 - len(target)), (0, 0)], mode='constant', constant_values=0)
     return target
 
 
