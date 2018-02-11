@@ -1,2 +1,4 @@
 LJSpeech-1.0/
 training/
+.idea/
+__pycache__/

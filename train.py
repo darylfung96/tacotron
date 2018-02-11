@@ -42,7 +42,9 @@ def load(filename):
 def main():
     tacotron = Tacotron(batch_size=157)
     inputs, linear_targets, mel_targets = get_data()
-    tacotron.train(inputs, linear_targets, mel_targets)
+
+    while True:
+        tacotron.train(inputs, linear_targets, mel_targets)
 
 
 if __name__ == '__main__':

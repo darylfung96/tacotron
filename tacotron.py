@@ -57,5 +57,7 @@ class Tacotron:
 
         self.current_step += 1
 
+        print("iteration {} loss: {}".format(self.current_step, loss))
+
         if self.current_step % 50 == 0:
             print('loss at {} step: {}'.format(self.current_step, loss))
