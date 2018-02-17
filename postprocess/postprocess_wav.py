@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.signal as signal
 
 from Hyperparameters import hp
 
@@ -14,3 +15,6 @@ def _db_to_amp(inputs):
 
 def _denormalize(inputs):
     return (np.clip(inputs, 0, 1) * -hp.min_level_db) + hp.min_level_db
+
+def _inv_preemphasis(inputs):
+    return signal.lfilter([1], [1, -hp.pre_emphasis], inputs)
