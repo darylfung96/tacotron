@@ -18,3 +18,18 @@ def _denormalize(inputs):
 
 def _inv_preemphasis(inputs):
     return signal.lfilter([1], [1, -hp.pre_emphasis], inputs)
+
+#TODO griffin lim algorithm
+def _griffin_lim(spectrogram):
+    """
+    Given spectrogram, recover audio from magnitude only spectrogram.
+    - Minimizes mean squared error between STFT of estimated signal and the modified STFT.
+    - Use iterative algorithm to estimate a signal from its modified STFT magnitude.
+    - Mean squared error between STFT magnitude of estimated signal and the modified STFT magnitude is reduced in
+      each iteration.
+
+
+    :param spectrogram:
+    :return: audio
+    """
+    pass
