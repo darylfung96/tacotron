@@ -1,3 +1,4 @@
+import librosa
 import numpy as np
 import scipy.signal as signal
 
@@ -19,8 +20,8 @@ def _denormalize(inputs):
 def _inv_preemphasis(inputs):
     return signal.lfilter([1], [1, -hp.pre_emphasis], inputs)
 
-#TODO griffin lim algorithm
-def _griffin_lim(spectrogram):
+
+def _griffin_lim(spectrogram, num_iterations):
     """
     Given spectrogram, recover audio from magnitude only spectrogram.
     - Minimizes mean squared error between STFT of estimated signal and the modified STFT.
@@ -32,4 +33,15 @@ def _griffin_lim(spectrogram):
     :param spectrogram:
     :return: audio
     """
-    pass
+    angles = np.exp(2 * np.pi * np.random.rand(*spectrogram.shape) )
+    hop_length = hp.frame_shift / 1000 * hp.sample_rate
+    window_length = hp.frame_length / 1000 * hp.sample_rate
+    for i in range(num_iterations):
+        full = np.abs(spectrogram).astype(np.complex) * angles
+        inverse = librosa.istft(full, hop_length=hop_length, win_length=window_length, window='hann')
+        rebuild = librosa.stft(inverse, hop_length=hop_length, win_length=window_length, window='hann')
+        angles = np.exp(1j * np.angle(rebuild))
+
+    full = np.abs(spectrogram).astype(np.complex) * angles
+    inverse = librosa.istft(full, hop_length=hop_length, win_length=window_length, window='hann')
+    return inverse

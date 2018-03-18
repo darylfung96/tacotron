@@ -47,13 +47,14 @@ class Tacotron:
         grads, _ = tf.clip_by_global_norm(tf.gradients(self.total_loss, self.tvars), 1.0)
         self.train_op = self.optimizer.apply_gradients(zip(grads, self.tvars))
 
-
     def train(self, inputs, linear_targets, mel_targets):
         loss, _ = self.sess.run([self.total_loss, self.train_op], feed_dict={
             self.inputs: inputs,
             self.mel_targets: mel_targets,
             self.linear_targets: linear_targets
         })
+        if self.sv.should_stop():
+            print('breka')
 
         self.current_step += 1
 
