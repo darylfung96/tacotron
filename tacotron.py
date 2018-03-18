@@ -53,8 +53,7 @@ class Tacotron:
             self.mel_targets: mel_targets,
             self.linear_targets: linear_targets
         })
-        if self.sv.should_stop():
-            print('breka')
+
 
         self.current_step += 1
 
