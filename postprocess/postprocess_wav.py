@@ -5,10 +5,17 @@ import scipy.signal as signal
 from Hyperparameters import hp
 
 
+def save_audio(wav, path):
+    wav = wav * 32767/max(0.01, np.max(np.abs(wav)))
+    librosa.output.write_wav(path, wav.astype(np.int16), hp.sample_rate)
+
+
 def inv_spectrogram(spectrogram):
     # value =  db to amp (denormalize + ref level db)
     #inv_preemphasis (griffin(value ** harmonic)) (harmonic is to increase the beauty if the sound)
-    pass
+    S = _denormalize(spectrogram)
+    S = _db_to_amp(S + hp.amp_reference)
+    return _inv_preemphasis(_griffin_lim(S, hp.griffin_iter) ** 2)
 
 
 def _db_to_amp(inputs):
@@ -33,15 +40,16 @@ def _griffin_lim(spectrogram, num_iterations):
     :param spectrogram:
     :return: audio
     """
-    angles = np.exp(2 * np.pi * np.random.rand(*spectrogram.shape) )
+    angles = np.exp(2j * np.pi * np.random.rand(*spectrogram.shape))
     hop_length = hp.frame_shift / 1000 * hp.sample_rate
     window_length = hp.frame_length / 1000 * hp.sample_rate
+    import pdb;pdb.set_trace()
     for i in range(num_iterations):
         full = np.abs(spectrogram).astype(np.complex) * angles
-        inverse = librosa.istft(full, hop_length=hop_length, win_length=window_length, window='hann')
-        rebuild = librosa.stft(inverse, hop_length=hop_length, win_length=window_length, window='hann')
+        inverse = librosa.istft(full, n_fft=hp.num_freq, hop_length=hop_length, win_length=window_length, window='hann')
+        rebuild = librosa.stft(inverse, n_fft=hp.num_freq, hop_length=hop_length, win_length=window_length, window='hann')
         angles = np.exp(1j * np.angle(rebuild))
 
     full = np.abs(spectrogram).astype(np.complex) * angles
-    inverse = librosa.istft(full, hop_length=hop_length, win_length=window_length, window='hann')
+    inverse = librosa.istft(full, n_fft=hp.num_freq, hop_length=hop_length, win_length=window_length, window='hann')
     return inverse

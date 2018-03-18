@@ -3,6 +3,7 @@ import tensorflow as tf
 from encoder import encoder
 from decoder import full_decoding
 from Hyperparameters import hp
+from postprocess.postprocess_wav import inv_spectrogram, save_audio
 
 
 
@@ -48,12 +49,14 @@ class Tacotron:
         self.train_op = self.optimizer.apply_gradients(zip(grads, self.tvars))
 
     def train(self, inputs, linear_targets, mel_targets):
-        loss, _ = self.sess.run([self.total_loss, self.train_op], feed_dict={
+        loss, linear_output, _ = self.sess.run([self.total_loss, self.linear_outputs, self.train_op], feed_dict={
             self.inputs: inputs,
             self.mel_targets: mel_targets,
             self.linear_targets: linear_targets
         })
 
+        waveform = inv_spectrogram(linear_output.T)
+        save_audio(waveform, 'audio/test.wav')
 
         self.current_step += 1
 
