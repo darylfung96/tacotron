@@ -55,8 +55,9 @@ class Tacotron:
             self.linear_targets: linear_targets
         })
 
-        waveform = inv_spectrogram(linear_output.T)
+        waveform = inv_spectrogram(linear_output[0].T)
         save_audio(waveform, 'audio/test.wav')
+        save_audio(inv_spectrogram(linear_targets[0].T), 'audio/target.wav')
 
         self.current_step += 1
 

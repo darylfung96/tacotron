@@ -15,7 +15,7 @@ def inv_spectrogram(spectrogram):
     #inv_preemphasis (griffin(value ** harmonic)) (harmonic is to increase the beauty if the sound)
     S = _denormalize(spectrogram)
     S = _db_to_amp(S + hp.amp_reference)
-    return _inv_preemphasis(_griffin_lim(S, hp.griffin_iter) ** 2)
+    return _inv_preemphasis(_griffin_lim(S**1.5))
 
 
 def _db_to_amp(inputs):
@@ -28,7 +28,7 @@ def _inv_preemphasis(inputs):
     return signal.lfilter([1], [1, -hp.pre_emphasis], inputs)
 
 
-def _griffin_lim(spectrogram, num_iterations):
+def _griffin_lim(spectrogram):
     """
     Given spectrogram, recover audio from magnitude only spectrogram.
     - Minimizes mean squared error between STFT of estimated signal and the modified STFT.
@@ -41,15 +41,14 @@ def _griffin_lim(spectrogram, num_iterations):
     :return: audio
     """
     angles = np.exp(2j * np.pi * np.random.rand(*spectrogram.shape))
-    hop_length = hp.frame_shift / 1000 * hp.sample_rate
-    window_length = hp.frame_length / 1000 * hp.sample_rate
-    import pdb;pdb.set_trace()
-    for i in range(num_iterations):
+    hop_length = int(hp.frame_shift / 1000 * hp.sample_rate)
+    window_length = int(hp.frame_length / 1000 * hp.sample_rate)
+    for i in range(hp.griffin_iter):
         full = np.abs(spectrogram).astype(np.complex) * angles
-        inverse = librosa.istft(full, n_fft=hp.num_freq, hop_length=hop_length, win_length=window_length, window='hann')
+        inverse = librosa.istft(full, hop_length=hop_length, win_length=window_length, window='hann')
         rebuild = librosa.stft(inverse, n_fft=hp.num_freq, hop_length=hop_length, win_length=window_length, window='hann')
         angles = np.exp(1j * np.angle(rebuild))
 
     full = np.abs(spectrogram).astype(np.complex) * angles
-    inverse = librosa.istft(full, n_fft=hp.num_freq, hop_length=hop_length, win_length=window_length, window='hann')
+    inverse = librosa.istft(full, hop_length=hop_length, win_length=window_length, window='hann')
     return inverse

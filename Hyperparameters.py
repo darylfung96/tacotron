@@ -10,7 +10,7 @@ class hp:
     amp_reference = 20
 
     min_level_db = -100
-    griffin_iter = 100
+    griffin_iter = 60
 
     folder_dir = "../keith_tacotron/tacotron/LJSpeech-1.0"
 
