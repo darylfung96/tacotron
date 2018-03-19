@@ -28,7 +28,7 @@ class Tacotron:
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
-        self.current_step = 0
+        self.global_step = 1
 
 
     def _loss(self):
@@ -46,28 +46,41 @@ class Tacotron:
         self.optimizer = tf.train.AdamOptimizer()
         self.tvars = tf.trainable_variables()
 
-        grads, _ = tf.clip_by_global_norm(tf.gradients(self.total_loss, self.tvars), 1.0)
-        self.train_op = self.optimizer.apply_gradients(zip(grads, self.tvars))
+        self.grads, _ = tf.clip_by_global_norm(tf.gradients(self.total_loss, self.tvars), 1.0)
+        self.train_op = self.optimizer.apply_gradients(zip(self.grads, self.tvars))
 
     def _summary_graph(self):
         self.loss_summary = tf.placeholder(tf.float32)
+
+        for grad, tvar in zip(self.grads, self.tvars):
+            tf.summary.histogram(tvar.name+'/grad', grad)
+            tf.summary.histogram(tvar.name, tvar)
+
+        tf.summary.scalar('training_loss_graph', self.loss_summary)
+        self.merged = tf.summary.merge_all()
+
         self.train_writer = tf.summary.FileWriter('logs', self.sess.grah)
-        self.train_writer.add_summary(self.loss_summary)
+
+
 
     def train(self, inputs, linear_targets, mel_targets):
-        loss, linear_output, _ = self.sess.run([self.total_loss, self.linear_outputs, self.train_op], feed_dict={
+        feed_dict = {
             self.inputs: inputs,
             self.mel_targets: mel_targets,
             self.linear_targets: linear_targets
-        })
+        }
+
+        loss, linear_output, _ = self.sess.run([self.total_loss, self.linear_outputs, self.train_op], feed_dict=feed_dict)
 
         waveform = inv_spectrogram(linear_output[0].T)
         save_audio(waveform, 'audio/test.wav')
         save_audio(inv_spectrogram(linear_targets[0].T), 'audio/target.wav')
 
-        self.current_step += 1
+        self.global_step += 1
 
-        print("iteration {} loss: {}".format(self.current_step, loss))
+        print("iteration {} loss: {}".format(self.global_step, loss))
 
-        if self.current_step % 50 == 0:
-            print('loss at {} step: {}'.format(self.current_step, loss))
+        if self.global_step % 50 == 0:
+            feed_dict.update({ self.loss_summary: loss })
+            summary = self.sess.run(self.merged, feed_dict=feed_dict)
+            self.train_writer.add_summary(summary, self.global_step)
