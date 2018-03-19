@@ -8,13 +8,14 @@ from postprocess.postprocess_wav import inv_spectrogram, save_audio
 
 
 class Tacotron:
-    def __init__(self, batch_size, is_training=True):
+    def __init__(self, batch_size, is_training=True, save_step=50):
         self.inputs = tf.placeholder(tf.int32, shape=[None, None])
         self.mel_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_mels])
         self.linear_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_freq/2 + 1])
 
         self._batch_size = batch_size
         self._is_training = is_training
+        self._save_step = 50
 
         self.embedding_variables = tf.get_variable('embedding', shape=[len(hp.symbols), 256])
         self.embedding_inputs = tf.nn.embedding_lookup(self.embedding_variables, self.inputs)
@@ -35,7 +36,7 @@ class Tacotron:
         linear_loss = tf.abs(self.linear_targets - self.linear_outputs)
 
         # we want to do prioritize training, so focus on frequency with 3000HZ or lower
-        priority_loss = int(3000 / (hp.sample_rate * 0.5) * hp.num_freq)
+        priority_loss = int(3000 / (hp.sample_rate * 0.5) * (hp.num_freq/2+1) )
         self.linear_loss = 0.5 * tf.reduce_mean(linear_loss) + 0.5 * tf.reduce_mean(linear_loss[:, :, :priority_loss])
 
         self.total_loss = self.mel_loss + self.linear_loss
@@ -47,6 +48,11 @@ class Tacotron:
 
         grads, _ = tf.clip_by_global_norm(tf.gradients(self.total_loss, self.tvars), 1.0)
         self.train_op = self.optimizer.apply_gradients(zip(grads, self.tvars))
+
+    def _summary_graph(self):
+        self.loss_summary = tf.placeholder(tf.float32)
+        self.train_writer = tf.summary.FileWriter('logs', self.sess.grah)
+        self.train_writer.add_summary(self.loss_summary)
 
     def train(self, inputs, linear_targets, mel_targets):
         loss, linear_output, _ = self.sess.run([self.total_loss, self.linear_outputs, self.train_op], feed_dict={
