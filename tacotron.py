@@ -15,7 +15,7 @@ class Tacotron:
 
         self._batch_size = batch_size
         self._is_training = is_training
-        self._save_step = 50
+        self._save_step = save_step
 
         self.embedding_variables = tf.get_variable('embedding', shape=[len(hp.symbols), 256])
         self.embedding_inputs = tf.nn.embedding_lookup(self.embedding_variables, self.inputs)
