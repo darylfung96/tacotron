@@ -16,3 +16,7 @@ todo.
 
 TODO:
 - train the network to generate a pretrained model
+
+Reimplementation of this for education purposes.
+Got lots of reference from: https://github.com/keithito/tacotron
+Thank you Keithito.
