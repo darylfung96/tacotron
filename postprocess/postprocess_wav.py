@@ -12,7 +12,7 @@ def save_audio(wav, path):
 
 def inv_spectrogram(spectrogram):
     # value =  db to amp (denormalize + ref level db)
-    #inv_preemphasis (griffin(value ** harmonic)) (harmonic is to increase the beauty if the sound)
+    # inv_preemphasis (griffin(value ** harmonic)) (harmonic is to increase the beauty if the sound)
     S = _denormalize(spectrogram)
     S = _db_to_amp(S + hp.amp_reference)
     return _inv_preemphasis(_griffin_lim(S**1.5))
@@ -43,6 +43,7 @@ def _griffin_lim(spectrogram):
     angles = np.exp(2j * np.pi * np.random.rand(*spectrogram.shape))
     hop_length = int(hp.frame_shift / 1000 * hp.sample_rate)
     window_length = int(hp.frame_length / 1000 * hp.sample_rate)
+
     for i in range(hp.griffin_iter):
         full = np.abs(spectrogram).astype(np.complex) * angles
         inverse = librosa.istft(full, hop_length=hop_length, win_length=window_length, window='hann')

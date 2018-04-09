@@ -37,14 +37,15 @@ class LJDataset(Dataset):
             index = 0
 
             for data in csv_data:
-                #linear_output, mel_output, text = self._extract_data(data)  # it was always outputting 1 in ever rows and columns, figured out the problem was with min_level_db which should be -100 but was 100.
+                # linear_output, mel_output, text = self._extract_data(data)
+                # it was always outputting 1 in ever rows and columns,
+                # figured out the problem was with min_level_db which should be -100 but was 100.
 
                 job_done = processor.submit(self._extract_data, data, index)
                 job_results.append(job_done)
                 index += 1
 
         training_data = [job_done.result() for job_done in tqdm(job_results)]
-
 
         with open('training/train.txt', 'w') as f:
             for data in tqdm(training_data):
@@ -61,7 +62,6 @@ class LJDataset(Dataset):
 
         linear_output = np.array(linear_output).transpose()
         mel_output = np.array(mel_output).transpose()
-
 
         linear_file = 'training/{}-linear.pkl'.format(index)
         mel_file = 'training/{}-mel.pkl'.format(index)
