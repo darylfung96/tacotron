@@ -15,6 +15,10 @@ python train.py
 todo.
 
 TODO:
-- implement griffin lim algorithm
-- implement inv-spectrogram that converts spectrogram back to audio.
 - train the network to generate a pretrained model
+
+Reimplementation of this for education purposes.
+
+Got lots of reference from: https://github.com/keithito/tacotron
+
+Thank you Keithito.
