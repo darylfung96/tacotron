@@ -31,7 +31,6 @@ class Tacotron:
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
         self._summary_graph()
 
-
     def _loss(self):
         self.mel_loss = tf.reduce_mean(tf.abs(self.mel_targets - self.mel_outputs))
         linear_loss = tf.abs(self.linear_targets - self.linear_outputs)
@@ -61,8 +60,6 @@ class Tacotron:
         self.merged = tf.summary.merge_all()
 
         self.train_writer = tf.summary.FileWriter('logs', self.sess.graph)
-
-
 
     def train(self, inputs, linear_targets, mel_targets):
         feed_dict = {
