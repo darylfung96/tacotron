@@ -28,7 +28,8 @@ class Tacotron:
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
-        self.global_step = 1
+        self.global_step = tf.Variable(0, name='global_step', trainable=False)
+        self._summary_graph()
 
 
     def _loss(self):
@@ -47,7 +48,7 @@ class Tacotron:
         self.tvars = tf.trainable_variables()
 
         self.grads, _ = tf.clip_by_global_norm(tf.gradients(self.total_loss, self.tvars), 1.0)
-        self.train_op = self.optimizer.apply_gradients(zip(self.grads, self.tvars))
+        self.train_op = self.optimizer.apply_gradients(zip(self.grads, self.tvars), global_step=self.global_step)
 
     def _summary_graph(self):
         self.loss_summary = tf.placeholder(tf.float32)
@@ -59,7 +60,7 @@ class Tacotron:
         tf.summary.scalar('training_loss_graph', self.loss_summary)
         self.merged = tf.summary.merge_all()
 
-        self.train_writer = tf.summary.FileWriter('logs', self.sess.grah)
+        self.train_writer = tf.summary.FileWriter('logs', self.sess.graph)
 
 
 
@@ -76,11 +77,9 @@ class Tacotron:
         save_audio(waveform, 'audio/test.wav')
         save_audio(inv_spectrogram(linear_targets[0].T), 'audio/target.wav')
 
-        self.global_step += 1
-
         print("iteration {} loss: {}".format(self.global_step, loss))
 
-        if self.global_step % 50 == 0:
+        if self.sess.run(self.global_step) % 50 == 0:
             feed_dict.update({ self.loss_summary: loss })
             summary = self.sess.run(self.merged, feed_dict=feed_dict)
             self.train_writer.add_summary(summary, self.global_step)
