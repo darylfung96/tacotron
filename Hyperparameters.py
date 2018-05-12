@@ -12,6 +12,6 @@ class hp:
     min_level_db = -100
     griffin_iter = 60
 
-    folder_dir = "LJSpeech-1.0"
+    folder_dir = "LJSpeech-1.1"
 
-    symbols = '_' + '~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '`1234567890' + '!\'(),-.:;?" '
+    symbols = '_' + '~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '`1234567890' + '!\'(),-.:;?"£âéà '

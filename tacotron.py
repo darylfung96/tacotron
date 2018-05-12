@@ -17,18 +17,19 @@ class Tacotron:
         self._is_training = is_training
         self._save_step = save_step
 
-        self.embedding_variables = tf.get_variable('embedding', shape=[len(hp.symbols), 256])
-        self.embedding_inputs = tf.nn.embedding_lookup(self.embedding_variables, self.inputs)
+        with tf.device('/gpu:0'):
+            self.embedding_variables = tf.get_variable('embedding', shape=[len(hp.symbols), 256])
+            self.embedding_inputs = tf.nn.embedding_lookup(self.embedding_variables, self.inputs)
 
-        self.encoder_outputs = encoder(self.embedding_inputs, is_training=is_training)
-        self.mel_outputs, self.linear_outputs = full_decoding(self.inputs, self.encoder_outputs, is_training, self.mel_targets, batch_size=batch_size)
+            self.encoder_outputs = encoder(self.embedding_inputs, is_training=is_training)
+            self.mel_outputs, self.linear_outputs = full_decoding(self.inputs, self.encoder_outputs, is_training, self.mel_targets, batch_size=batch_size)
+            self.global_step = tf.Variable(0, name='global_step', trainable=False)
 
         self._loss()
         self._optimizer()
-        self.sess = tf.Session()
+        self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
         self.sess.run(tf.global_variables_initializer())
 
-        self.global_step = tf.Variable(0, name='global_step', trainable=False)
         self._summary_graph()
 
     def _loss(self):

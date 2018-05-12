@@ -9,13 +9,16 @@ np.pad(input, [(up, down),(left, right)], mode, value)
 def _vectorize_inputs(inputs):
     return [vectorize_input(input) for input in inputs]
 
+
 def vectorize_input(input):
     input = input.rstrip()
-    return [hp.symbols.index(character) for character in input]
+    return [hp.symbols.index(character) for character in input if character in hp.symbols]
+
 
 def pad_input(x, max_length):
     x = np.pad(x, (0, max_length - len(x)), mode='constant', constant_values=0)
     return x
+
 
 def pad_target(target, max_length):
     # max_length+1 because max_length will be hard to divide into r_frames and converted to match
@@ -28,5 +31,5 @@ def pad_target(target, max_length):
 
 
 # convert number to words
-import num2words
+# import num2words
 
