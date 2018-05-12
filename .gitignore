@@ -4,6 +4,6 @@ logs/
 training/
 .idea/
 __pycache__/
-
+model/
 *.pyc
 .idea/
