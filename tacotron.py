@@ -1,4 +1,5 @@
 import tensorflow as tf
+import os
 
 from encoder import encoder
 from decoder import full_decoding
@@ -32,6 +33,7 @@ class Tacotron:
         self.sess.run(tf.global_variables_initializer())
 
         self._summary_graph()
+        self._make_model_dir()
 
     def _loss(self):
         self.mel_loss = tf.reduce_mean(tf.abs(self.mel_targets - self.mel_outputs))
@@ -42,6 +44,10 @@ class Tacotron:
         self.linear_loss = 0.5 * tf.reduce_mean(linear_loss) + 0.5 * tf.reduce_mean(linear_loss[:, :, :priority_loss])
 
         self.total_loss = self.mel_loss + self.linear_loss
+
+    def _make_model_dir(self):
+        if not os.path.isdir(hp.model_dir):
+            os.mkdir(hp.model_dir)
 
     #TODO might need momentum
     def _optimizer(self):
@@ -81,8 +87,8 @@ class Tacotron:
 
         print("iteration {} loss: {}".format(current_global_step, loss))
 
-        if self.sess.run(self.global_step) % 50 == 0:
-            feed_dict.update({ self.loss_summary: loss })
+        if self.sess.run(self.global_step) % 100 == 0:
+            feed_dict.update({self.loss_summary: loss})
             summary = self.sess.run(self.merged, feed_dict=feed_dict)
-            self.train_writer.add_summary(summary, self.global_step)
-            self.saver.save(hp.model_dir, current_global_step)
+            self.train_writer.add_summary(summary, current_global_step)
+            self.saver.save(self.sess, hp.model_dir, current_global_step)

@@ -13,7 +13,7 @@ class hp:
     griffin_iter = 60
 
     folder_dir = "LJSpeech-1.1"
-    model_dir = 'model'
+    model_dir = 'model/tacotron.ckpt'
     save_audio_every_ter = 500
 
     symbols = '_' + '~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '`1234567890' + '!\'(),-.:;?"£âéà '
