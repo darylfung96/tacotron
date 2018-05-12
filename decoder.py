@@ -153,9 +153,6 @@ def full_decoding(inputs, encoder_outputs, is_training, mel_targets, batch_size=
 
     (final_decoder_outputs, sample_ids), decoder_states, _ = dynamic_decode(BasicDecoder(decoder_outputs, helper, decoder_initial_states))
 
-
-
-
     mel_outputs = tf.reshape(final_decoder_outputs, shape=[batch_size, -1, hp.num_mels])
     post_outputs = cbhg(mel_outputs, 16, projections=[256, hp.num_mels], scope='post_cbhg')
     linear_outputs = tf.layers.dense(post_outputs, hp.num_freq/2 + 1)

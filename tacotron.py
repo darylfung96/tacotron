@@ -28,6 +28,7 @@ class Tacotron:
         self._loss()
         self._optimizer()
         self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+        self.saver = tf.train.Saver()
         self.sess.run(tf.global_variables_initializer())
 
         self._summary_graph()
@@ -68,16 +69,20 @@ class Tacotron:
             self.mel_targets: mel_targets,
             self.linear_targets: linear_targets
         }
+        current_global_step = self.sess.run(self.global_step)
 
         loss, linear_output, _ = self.sess.run([self.total_loss, self.linear_outputs, self.train_op], feed_dict=feed_dict)
 
         waveform = inv_spectrogram(linear_output[0].T)
-        save_audio(waveform, 'audio/test.wav')
-        save_audio(inv_spectrogram(linear_targets[0].T), 'audio/target.wav')
 
-        print("iteration {} loss: {}".format(self.global_step, loss))
+        if current_global_step % hp.save_audio_every_ter == 0:
+            save_audio(waveform, 'audio/test.wav')
+            save_audio(inv_spectrogram(linear_targets[0].T), 'audio/target.wav')
+
+        print("iteration {} loss: {}".format(current_global_step, loss))
 
         if self.sess.run(self.global_step) % 50 == 0:
             feed_dict.update({ self.loss_summary: loss })
             summary = self.sess.run(self.merged, feed_dict=feed_dict)
             self.train_writer.add_summary(summary, self.global_step)
+            self.saver.save(hp.model_dir, current_global_step)
