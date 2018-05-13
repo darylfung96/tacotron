@@ -32,7 +32,7 @@ class TestingHelper(Helper):
         """ return finished, next input and state"""
         finished = tf.reduce_all(tf.equal(outputs, self._end_token), axis=1)
         next_input = outputs[:, -self._output_dim:]
-        return (finished, next_input, state)
+        return finished, next_input, state
 
 
 class TrainingHelper(Helper):

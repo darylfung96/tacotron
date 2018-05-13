@@ -1,5 +1,6 @@
 import tensorflow as tf
 import os
+import logging
 
 from encoder import encoder
 from decoder import full_decoding
@@ -7,9 +8,14 @@ from Hyperparameters import hp
 from postprocess.postprocess_wav import inv_spectrogram, save_audio
 
 
-
 class Tacotron:
     def __init__(self, batch_size, is_training=True, save_step=50):
+        self.logger = logging.getLogger(__name__)
+        log_handler = logging.StreamHandler()
+        log_formatter = logging.Formatter('%(asctime)s - %(name)s: %(message)s')
+        log_handler.setFormatter(log_formatter)
+        self.logger.addHandler(log_handler)
+
         self.inputs = tf.placeholder(tf.int32, shape=[None, None])
         self.mel_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_mels])
         self.linear_targets = tf.placeholder(tf.float32, shape=[None, None, hp.num_freq/2 + 1])
@@ -34,6 +40,7 @@ class Tacotron:
 
         self._summary_graph()
         self._make_model_dir()
+        self._load_model()
 
     def _loss(self):
         self.mel_loss = tf.reduce_mean(tf.abs(self.mel_targets - self.mel_outputs))
@@ -49,7 +56,12 @@ class Tacotron:
         if not os.path.isdir(hp.model_dir):
             os.mkdir(hp.model_dir)
 
-    #TODO might need momentum
+    def _load_model(self):
+        self.logger.info('loading model...')
+        self.saver.restore(self.sess, tf.train.latest_checkpoint(hp.model_dir))
+        logging.info('successfully loaded model')
+
+    # TODO might need momentum
     def _optimizer(self):
         self.optimizer = tf.train.AdamOptimizer()
         self.tvars = tf.trainable_variables()
@@ -85,10 +97,10 @@ class Tacotron:
             save_audio(waveform, 'audio/test.wav')
             save_audio(inv_spectrogram(linear_targets[0].T), 'audio/target.wav')
 
-        print("iteration {} loss: {}".format(current_global_step, loss))
+        self.logger.info("iteration {} loss: {}".format(current_global_step, loss))
 
         if self.sess.run(self.global_step) % 100 == 0:
             feed_dict.update({self.loss_summary: loss})
             summary = self.sess.run(self.merged, feed_dict=feed_dict)
             self.train_writer.add_summary(summary, current_global_step)
-            self.saver.save(self.sess, hp.model_dir, current_global_step)
+            self.saver.save(self.sess, os.path.join(hp.model_dir, hp.model_file_name), current_global_step)
