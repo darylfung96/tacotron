@@ -5,6 +5,5 @@ training/
 .idea/
 __pycache__/
 model/
-model2/
 *.pyc
 .idea/
