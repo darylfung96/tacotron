@@ -28,5 +28,4 @@ TODO:
 Reimplementation of this for education purposes.
 
 Got lots of reference from: https://github.com/keithito/tacotron
-
-Thank you Keithito.
+Really grateful and appreciate the work of Keith Ito.
